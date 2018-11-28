@@ -90,7 +90,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void doDrawing(Graphics g) {
-        if (String.valueOf(inGame).equals("true")) {//feltételes kifejész összevonása
+        if (String.valueOf(inGame).equals("true")) {
             for (int i = 0; i < elements.size(); ++i) {
                 Element e = elements.get(i);
                 g.drawImage(e.getImage(), e.getX(), e.getY(), this);
@@ -134,7 +134,7 @@ public class Board extends JPanel implements ActionListener {
             x[z] = x[(z - 1)];
             y[z] = y[(z - 1)];
         }
-        if (leftDirection) {//beágyazott feltételes kifejezés helyettesítése
+        if (leftDirection) {
             x[0] -= DOT_SIZE;
         } else {
             if (rightDirection) {
@@ -153,7 +153,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void checkCollision() {
         for (int z = dots; z > 0; z--) {
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {//feltételes utasítás szétbontása
+            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
                 inGame = false;
             }
         }
@@ -181,7 +181,7 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
-        if (random.nextBoolean()) {//megkettözött feltételtöredékek összevonása
+        if (random.nextBoolean()) {
             int score = random.nextInt(10);
             elements.add(new Element(apple, score, x, y));
         } else {
