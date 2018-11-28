@@ -90,9 +90,8 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void doDrawing(Graphics g) {
-        if (String.valueOf(inGame).equals("true")) {//feltételes kifejész összevonása
-            for (int i = 0; i < elements.size(); ++i) {
-                Element e = elements.get(i);
+        if (inGame) {
+            for (Element e : elements) {
                 g.drawImage(e.getImage(), e.getX(), e.getY(), this);
             }
             for (int z = 0; z < dots; z++) {
@@ -134,26 +133,23 @@ public class Board extends JPanel implements ActionListener {
             x[z] = x[(z - 1)];
             y[z] = y[(z - 1)];
         }
-        if (leftDirection) {//beágyazott feltételes kifejezés helyettesítése
+        if (leftDirection) {
             x[0] -= DOT_SIZE;
-        } else {
-            if (rightDirection) {
-                x[0] += DOT_SIZE;
-            }
+        }
+        if (rightDirection) {
+            x[0] += DOT_SIZE;
         }
         if (upDirection) {
             y[0] -= DOT_SIZE;
-        } else {
-            if (downDirection) {
-                y[0] += DOT_SIZE;
-            }
         }
-
+        if (downDirection) {
+            y[0] += DOT_SIZE;
+        }
     }
 
     private void checkCollision() {
         for (int z = dots; z > 0; z--) {
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {//feltételes utasítás szétbontása
+            if (isSuicide(z)) {
                 inGame = false;
             }
         }
@@ -174,6 +170,10 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
+    private boolean isSuicide(int z) {
+        return (z > 4) && (x[0] == x[z]) && (y[0] == y[z]);
+    }
+
     private void locateElement() {
         Random random = new Random();
         int r = (int) (random.nextDouble() * RAND_POS);
@@ -181,13 +181,7 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
-        if (random.nextBoolean()) {//megkettözött feltételtöredékek összevonása
-            int score = random.nextInt(10);
-            elements.add(new Element(apple, score, x, y));
-        } else {
-            int score = random.nextInt(10);
-            elements.add(new Element(pear, score, x, y));
-        }
+        elements.add(new Element(random.nextBoolean() ? apple : pear, random.nextInt(10), x, y));
     }
 
     @Override
