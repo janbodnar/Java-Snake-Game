@@ -1,4 +1,4 @@
-package com.zetcode;
+package src;
 
 import java.awt.Image;
 
