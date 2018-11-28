@@ -180,7 +180,13 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
-        this.elements.add(new Element(random.nextBoolean() ? apple : pear, (int)(Math.random()*10),x,y));
+        if(random.nextBoolean()) {
+            int score = random.nextInt(10);
+            this.elements.add(new Element(apple, score, x, y));
+        }else {
+            int score = random.nextInt(10);
+            this.elements.add(new Element(pear, score, x, y));
+        }
     }
 
     @Override
