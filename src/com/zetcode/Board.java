@@ -90,7 +90,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void doDrawing(Graphics g) {
-        if (String.valueOf(inGame).equals("true")) {
+        if (String.valueOf(inGame).equals("true")) {//feltételes kifejész összevonása
             for (int i = 0; i < elements.size(); ++i) {
                 Element e = elements.get(i);
                 g.drawImage(e.getImage(), e.getX(), e.getY(), this);
@@ -105,29 +105,27 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void gameOver(Graphics g) {
-        String msg = "Game Over\nYour score is: " + score;
+        String msg = "Game Over";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = getFontMetrics(small);
 
         g.setColor(Color.white);
         g.setFont(small);
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
+        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 - 10);
+        msg = "Your score is: " + score;
+        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 + 10);
     }
 
     private void checkElement() {
-        Element found = null;
         for (int i = 0; i < elements.size(); ++i) {
             Element e = elements.get(i);
             if ((x[0] == e.getX()) && (y[0] == e.getY())) {
                 dots++;
                 locateElement();
                 score += e.getScore();
-                found = e;
+                elements.remove(e);
                 break;
             }
-        }
-        if (found != null) {
-            elements.remove(found);
         }
     }
 
@@ -136,23 +134,26 @@ public class Board extends JPanel implements ActionListener {
             x[z] = x[(z - 1)];
             y[z] = y[(z - 1)];
         }
-        if (leftDirection) {
+        if (leftDirection) {//beágyazott feltételes kifejezés helyettesítése
             x[0] -= DOT_SIZE;
-        }
-        if (rightDirection) {
-            x[0] += DOT_SIZE;
+        } else {
+            if (rightDirection) {
+                x[0] += DOT_SIZE;
+            }
         }
         if (upDirection) {
             y[0] -= DOT_SIZE;
+        } else {
+            if (downDirection) {
+                y[0] += DOT_SIZE;
+            }
         }
-        if (downDirection) {
-            y[0] += DOT_SIZE;
-        }
+
     }
 
     private void checkCollision() {
         for (int z = dots; z > 0; z--) {
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
+            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {//feltételes utasítás szétbontása
                 inGame = false;
             }
         }
@@ -180,12 +181,12 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
-        if (random.nextBoolean()) {
+        if (random.nextBoolean()) {//megkettözött feltételtöredékek összevonása
             int score = random.nextInt(10);
-            this.elements.add(new Element(apple, score, x, y));
+            elements.add(new Element(apple, score, x, y));
         } else {
             int score = random.nextInt(10);
-            this.elements.add(new Element(pear, score, x, y));
+            elements.add(new Element(pear, score, x, y));
         }
     }
 

@@ -1,10 +1,7 @@
 package com.zetcode;
 
-import java.awt.*;
+import java.awt.Image;
 
-/**
- * Created by Balinator on 2018. 11. 28..
- */
 public class Element {
     private Image image;
     private int score;
