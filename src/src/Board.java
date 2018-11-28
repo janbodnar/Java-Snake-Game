@@ -102,32 +102,17 @@ public class Board extends JPanel implements ActionListener {
             gameOver(g);
         }
     }
+    
+    private void locateElement() {
+        Random random = new Random();
+        int r = (int) (random.nextDouble() * RAND_POS);
+        int x = ((r * DOT_SIZE));
 
-    private void gameOver(Graphics g) {
-        String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        FontMetrics metr = getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 - 10);
-        msg = "Your score is: " + score;
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 + 10);
+        r = (int) (random.nextDouble() * RAND_POS);
+        int y = ((r * DOT_SIZE));
+        elements.add(new Element(random.nextBoolean() ? apple : pear, random.nextInt(10), x, y));
     }
-
-    private void checkElement() {
-        for (int i = 0; i < elements.size(); ++i) {
-            Element e = elements.get(i);
-            if ((x[0] == e.getX()) && (y[0] == e.getY())) {
-                dots++;
-                locateElement();
-                score += e.getScore();
-                elements.remove(e);
-                break;
-            }
-        }
-    }
-
+    
     private void move() {
         for (int z = dots; z > 0; z--) {
             x[z] = x[(z - 1)];
@@ -146,44 +131,70 @@ public class Board extends JPanel implements ActionListener {
             y[0] += DOT_SIZE;
         }
     }
-
+    
     private void checkCollision() {
         for (int z = dots; z > 0; z--) {
             if (isSuicide(z)) {
-                inGame = false;
+            	endGame();
+            	break;
             }
         }
-        if (y[0] >= B_HEIGHT) {
-            inGame = false;
-        }
-        if (y[0] < 0) {
-            inGame = false;
-        }
-        if (x[0] >= B_WIDTH) {
-            inGame = false;
-        }
-        if (x[0] < 0) {
-            inGame = false;
-        }
-        if (!inGame) {
-            timer.stop();
-        }
+        if (commitedSuicide())
+            endGame();
+    }
+    
+    private Boolean commitedSuicide() {
+        return (y[0] >= B_HEIGHT || y[0] < 0 || x[0] >= B_WIDTH || x[0] < 0);
     }
 
-    private boolean isSuicide(int z) {
+    private Boolean isSuicide(int z) {
         return (z > 4) && (x[0] == x[z]) && (y[0] == y[z]);
     }
-
-    private void locateElement() {
-        Random random = new Random();
-        int r = (int) (random.nextDouble() * RAND_POS);
-        int x = ((r * DOT_SIZE));
-
-        r = (int) (random.nextDouble() * RAND_POS);
-        int y = ((r * DOT_SIZE));
-        elements.add(new Element(random.nextBoolean() ? apple : pear, random.nextInt(10), x, y));
+    
+    private void endGame() {
+        inGame = false;
+        timer.stop();
+    }
+    
+    private void checkElement() {
+        for (int i = 0; i < elements.size(); ++i) {
+            Element e = elements.get(i);
+            if (checkSnakeAteFruit(e)) {
+                snakeAteFruit(e);
+                break;
+            }
+        }
     }
 
+    private Boolean checkSnakeAteFruit(Element e) {
+        return (x[0] == e.getX()) && (y[0] == e.getY());
+    }
+
+    private void snakeAteFruit(Element e) {
+        dots++;
+        locateElement();
+        score += getScore(e);
+        elements.remove(e);
+    }
+
+    private int getScore(Element e) {
+        if (e.getScore() <= 5) return 5;
+        if (e.getScore() <= 10) return 10;
+        return 0;
+    }
+
+    private void gameOver(Graphics g) {
+        String msg = "Game Over";
+        Font small = new Font("Helvetica", Font.BOLD, 14);
+        FontMetrics metr = getFontMetrics(small);
+
+        g.setColor(Color.white);
+        g.setFont(small);
+        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 - 10);
+        msg = "Your score is: " + score;
+        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2 + 10);
+    }
+    
     @Override
     public void actionPerformed(ActionEvent e) {
         if (inGame) {
@@ -198,30 +209,47 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private class TAdapter extends KeyAdapter {
+    	int key;
 
         @Override
         public void keyPressed(KeyEvent e) {
-            int key = e.getKeyCode();
-            if ((key == KeyEvent.VK_LEFT) && (!rightDirection)) {
+            key = e.getKeyCode();
+            if (canMoveLeft()) {
                 leftDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
-            if ((key == KeyEvent.VK_RIGHT) && (!leftDirection)) {
+            if (canMoveRight()) {
                 rightDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
-            if ((key == KeyEvent.VK_UP) && (!downDirection)) {
+            if (canMoveUp()) {
                 upDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
-            if ((key == KeyEvent.VK_DOWN) && (!upDirection)) {
+            if (canMoveDown()) {
                 downDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
+        }
+        
+        private Boolean canMoveLeft() {
+        	return (key == KeyEvent.VK_LEFT) && (!rightDirection);
+        }
+        
+        private Boolean canMoveRight() {
+        	return (key == KeyEvent.VK_RIGHT) && (!leftDirection);
+        }
+        
+        private Boolean canMoveUp() {
+        	return (key == KeyEvent.VK_UP) && (!downDirection);
+        }
+        
+        private Boolean canMoveDown() {
+        	return (key == KeyEvent.VK_DOWN) && (!upDirection);
         }
     }
 }
