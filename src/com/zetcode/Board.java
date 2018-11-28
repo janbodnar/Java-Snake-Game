@@ -49,7 +49,7 @@ public class Board extends JPanel implements ActionListener {
     public Board() {
         initBoard();
     }
-    
+
     private void initBoard() {
         addKeyListener(new TAdapter());
         setBackground(Color.black);
@@ -88,10 +88,10 @@ public class Board extends JPanel implements ActionListener {
         super.paintComponent(g);
         doDrawing(g);
     }
-    
+
     private void doDrawing(Graphics g) {
         if (String.valueOf(inGame).equals("true")) {
-            for(int i = 0; i < elements.size(); ++i){
+            for (int i = 0; i < elements.size(); ++i) {
                 Element e = elements.get(i);
                 g.drawImage(e.getImage(), e.getX(), e.getY(), this);
             }
@@ -101,7 +101,7 @@ public class Board extends JPanel implements ActionListener {
             Toolkit.getDefaultToolkit().sync();
         } else {
             gameOver(g);
-        }        
+        }
     }
 
     private void gameOver(Graphics g) {
@@ -116,7 +116,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void checkElement() {
         Element found = null;
-        for(int i = 0; i < elements.size(); ++i) {
+        for (int i = 0; i < elements.size(); ++i) {
             Element e = elements.get(i);
             if ((x[0] == e.getX()) && (y[0] == e.getY())) {
                 dots++;
@@ -126,7 +126,7 @@ public class Board extends JPanel implements ActionListener {
                 break;
             }
         }
-        if(found != null) {
+        if (found != null) {
             elements.remove(found);
         }
     }
@@ -180,10 +180,10 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
-        if(random.nextBoolean()) {
+        if (random.nextBoolean()) {
             int score = random.nextInt(10);
             this.elements.add(new Element(apple, score, x, y));
-        }else {
+        } else {
             int score = random.nextInt(10);
             this.elements.add(new Element(pear, score, x, y));
         }
@@ -195,7 +195,7 @@ public class Board extends JPanel implements ActionListener {
             checkElement();
             checkCollision();
             move();
-            if(new Random().nextDouble() < 0.05) {
+            if (new Random().nextDouble() < 0.05) {
                 locateElement();
             }
         }
