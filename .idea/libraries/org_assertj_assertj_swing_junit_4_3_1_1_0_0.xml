@@ -1,0 +1,15 @@
+<component name="libraryTable">
+  <library name="org.assertj:assertj-swing-junit-4.3.1:1.0.0" type="repository">
+    <properties maven-id="org.assertj:assertj-swing-junit-4.3.1:1.0.0" />
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/assertj-swing-junit-4.3.1-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/junit-4.3.1.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/assertj-swing-junit-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/assertj-swing-1.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/assertj-core-1.6.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/fest-util-1.2.5.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
