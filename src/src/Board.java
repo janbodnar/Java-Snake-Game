@@ -91,8 +91,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void doDrawing(Graphics g) {
         if (String.valueOf(inGame).equals("true")) {
-            for (int i = 0; i < elements.size(); ++i) {
-                Element e = elements.get(i);
+            for (Element e : elements) {
                 g.drawImage(e.getImage(), e.getX(), e.getY(), this);
             }
             for (int z = 0; z < dots; z++) {
