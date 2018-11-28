@@ -11,6 +11,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -22,14 +25,12 @@ public class Board extends JPanel implements ActionListener {
     private final int DOT_SIZE = 10;
     private final int ALL_DOTS = 900;
     private final int RAND_POS = 29;
-    private final int DELAY = 140;
+    private final int DELAY = 250;
 
     private final int x[] = new int[ALL_DOTS];
     private final int y[] = new int[ALL_DOTS];
 
     private int dots;
-    private int apple_x;
-    private int apple_y;
 
     private boolean leftDirection = false;
     private boolean rightDirection = true;
@@ -40,7 +41,10 @@ public class Board extends JPanel implements ActionListener {
     private Timer timer;
     private Image ball;
     private Image apple;
-    private Image head;
+    private Image pear;
+
+    private List<Element> elements = new ArrayList<>();
+    private int score = 0;
 
     public Board() {
         initBoard();
@@ -63,8 +67,8 @@ public class Board extends JPanel implements ActionListener {
         ImageIcon iia = new ImageIcon("src/resources/apple.png");
         apple = iia.getImage();
 
-        ImageIcon iih = new ImageIcon("src/resources/head.png");
-        head = iih.getImage();
+        ImageIcon iip = new ImageIcon("src/resources/pear.png");
+        pear = iip.getImage();
     }
 
     private void initGame() {
@@ -73,7 +77,7 @@ public class Board extends JPanel implements ActionListener {
             x[z] = 50 - z * 10;
             y[z] = 50;
         }
-        locateApple();
+        locateElement();
 
         timer = new Timer(DELAY, this);
         timer.start();
@@ -86,14 +90,13 @@ public class Board extends JPanel implements ActionListener {
     }
     
     private void doDrawing(Graphics g) {
-        if (inGame) {
-            g.drawImage(apple, apple_x, apple_y, this);
+        if (String.valueOf(inGame).equals("true")) {
+            for(int i = 0; i < elements.size(); ++i){
+                Element e = elements.get(i);
+                g.drawImage(e.getImage(), e.getX(), e.getY(), this);
+            }
             for (int z = 0; z < dots; z++) {
-                if (z == 0) {
-                    g.drawImage(head, x[z], y[z], this);
-                } else {
-                    g.drawImage(ball, x[z], y[z], this);
-                }
+                g.drawImage(ball, x[z], y[z], this);
             }
             Toolkit.getDefaultToolkit().sync();
         } else {
@@ -102,7 +105,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void gameOver(Graphics g) {
-        String msg = "Game Over";
+        String msg = "Game Over\nYour score is: " + score;
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = getFontMetrics(small);
 
@@ -111,10 +114,20 @@ public class Board extends JPanel implements ActionListener {
         g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
     }
 
-    private void checkApple() {
-        if ((x[0] == apple_x) && (y[0] == apple_y)) {
-            dots++;
-            locateApple();
+    private void checkElement() {
+        Element found = null;
+        for(int i = 0; i < elements.size(); ++i) {
+            Element e = elements.get(i);
+            if ((x[0] == e.getX()) && (y[0] == e.getY())) {
+                dots++;
+                locateElement();
+                score += e.getScore();
+                found = e;
+                break;
+            }
+        }
+        if(found != null) {
+            elements.remove(found);
         }
     }
 
@@ -160,20 +173,25 @@ public class Board extends JPanel implements ActionListener {
         }
     }
 
-    private void locateApple() {
-        int r = (int) (Math.random() * RAND_POS);
-        apple_x = ((r * DOT_SIZE));
+    private void locateElement() {
+        Random random = new Random();
+        int r = (int) (random.nextDouble() * RAND_POS);
+        int x = ((r * DOT_SIZE));
 
-        r = (int) (Math.random() * RAND_POS);
-        apple_y = ((r * DOT_SIZE));
+        r = (int) (random.nextDouble() * RAND_POS);
+        int y = ((r * DOT_SIZE));
+        this.elements.add(new Element(random.nextBoolean() ? apple : pear, (int)(Math.random()*10),x,y));
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (inGame) {
-            checkApple();
+            checkElement();
             checkCollision();
             move();
+            if(new Random().nextDouble() < 0.05) {
+                locateElement();
+            }
         }
         repaint();
     }
