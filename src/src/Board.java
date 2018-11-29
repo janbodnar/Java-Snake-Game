@@ -1,5 +1,7 @@
 package src;
 
+import org.junit.Assert;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -110,6 +112,7 @@ public class Board extends JPanel implements ActionListener {
 
         r = (int) (random.nextDouble() * RAND_POS);
         int y = ((r * DOT_SIZE));
+		Assert.assertTrue(apple != null && pear != null);
         elements.add(new Element(random.nextBoolean() ? apple : pear, random.nextInt(10), x, y));
     }
     
