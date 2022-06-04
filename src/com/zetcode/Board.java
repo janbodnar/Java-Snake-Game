@@ -35,7 +35,18 @@ public class Board extends JPanel implements ActionListener {
     private static final int ALL_DOTS = 900;
     private static final int DELAY = 140;
     private static final String PATHTOFILE = "./src/com/zetcode/maxScore.txt";
+    private static final String[] MENUOPTIONS = {
+            "Press SPACE to start\n",
+            "Press C to chooose the snake color\n",
+            "Press S to choose the snake speed\n",
+            "Press L to choose the snake length\n",
+            "Press A to choose the apple color\n",
+            "Press M to choose the apple multiplier\n",
+            "Press ESC to exit"
+    };
+
     private final TAdapter myKeyListener = new TAdapter();
+    private final MenuKeyListener menuListener = new MenuKeyListener();
 
     private final int[] x = new int[ALL_DOTS];
     private final int[] y = new int[ALL_DOTS];
@@ -49,7 +60,12 @@ public class Board extends JPanel implements ActionListener {
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
-    private boolean inGame = true;
+
+    private enum inGame {
+        IN_GAME, NOT_IN_GAME, IN_MENU
+    }
+
+    private inGame status = inGame.IN_MENU;
 
     private Timer timer;
     private Image ball;
@@ -57,6 +73,13 @@ public class Board extends JPanel implements ActionListener {
     private Image head;
 
     public Board() {
+        // TODO: make a main menu with some customizable options:
+        // - change snake color
+        // - change snake speed
+        // - change snake starting length
+        // - change apple color
+        // - add score multiplier
+
         this.initBoard();
     }
 
@@ -152,12 +175,31 @@ public class Board extends JPanel implements ActionListener {
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
 
+        this.drawMenu(g);
         this.doDrawing(g);
+    }
+
+    private void drawMenu(Graphics g) {
+
+        int optionHeightPos = B_HEIGHT / 2 - 50;
+
+        this.setBackground(Color.GRAY);
+
+        g.setColor(Color.CYAN);
+        FontMetrics metr = getFontMetrics(g.getFont());
+        g.setFont(new Font("Helvetica", Font.BOLD, 13));
+
+        for (int i = 0; i < MENUOPTIONS.length; i++) {
+            g.drawString(MENUOPTIONS[i], (B_WIDTH - metr.stringWidth(MENUOPTIONS[i])) / 2, optionHeightPos);
+            optionHeightPos += 20;
+        }
+
+        this.addKeyListener(this.menuListener);
     }
 
     private void doDrawing(Graphics g) {
 
-        if (this.inGame) {
+        if (this.status == inGame.IN_GAME) {
 
             g.drawImage(apple, apple_x, apple_y, this);
             this.displayPoints(g);
@@ -171,8 +213,10 @@ public class Board extends JPanel implements ActionListener {
 
             Toolkit.getDefaultToolkit().sync();
 
-        } else {
+        } else if (this.status == inGame.NOT_IN_GAME) {
             this.gameOver(g);
+        } else {
+            this.drawMenu(g);
         }
     }
 
@@ -236,22 +280,22 @@ public class Board extends JPanel implements ActionListener {
 
         for (int z = dots; z > 0; z--) {
             if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z]))
-                this.inGame = false;
+                this.status = inGame.NOT_IN_GAME;
         }
 
         if (y[0] >= B_HEIGHT)
-            this.inGame = false;
+            this.status = inGame.NOT_IN_GAME;
 
         if (y[0] < 0)
-            this.inGame = false;
+            this.status = inGame.NOT_IN_GAME;
 
         if (x[0] >= B_WIDTH)
-            this.inGame = false;
+            this.status = inGame.NOT_IN_GAME;
 
         if (x[0] < 0)
-            this.inGame = false;
+            this.status = inGame.NOT_IN_GAME;
 
-        if (!inGame)
+        if (this.status == inGame.NOT_IN_GAME)
             this.timer.stop();
     }
 
@@ -268,7 +312,7 @@ public class Board extends JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (inGame) {
+        if (this.status == inGame.IN_GAME) {
             this.checkApple();
             this.checkCollision();
             this.move();
@@ -308,8 +352,8 @@ public class Board extends JPanel implements ActionListener {
                 leftDirection = false;
             }
 
-            if (key == KeyEvent.VK_ENTER && (!inGame)) {
-                inGame = true;
+            if (key == KeyEvent.VK_ENTER && (status == inGame.NOT_IN_GAME)) {
+                status = inGame.IN_GAME;
                 downDirection = false;
                 rightDirection = true;
                 upDirection = false;
@@ -317,5 +361,40 @@ public class Board extends JPanel implements ActionListener {
                 initGame();
             }
         }
+    }
+
+    private class MenuKeyListener extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+            int key = e.getKeyCode();
+
+            switch (key) {
+                case KeyEvent.VK_SPACE:
+                    status = inGame.IN_GAME;
+                    break;
+                case KeyEvent.VK_ESCAPE:
+                    System.exit(0);
+                    break;
+                case KeyEvent.VK_C:
+                    // Change snake color
+                    break;
+                case KeyEvent.VK_S:
+                    // Change snake speed
+                    break;
+                case KeyEvent.VK_L:
+                    // Change snake starting length
+                    break;
+                case KeyEvent.VK_A:
+                    // Change apple color
+                    break;
+                case KeyEvent.VK_M:
+                    // Change apple multiplier
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
     }
 }
