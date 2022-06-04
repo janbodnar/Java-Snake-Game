@@ -35,6 +35,7 @@ public class Board extends JPanel implements ActionListener {
     private static final int ALL_DOTS = 900;
     private static final int DELAY = 140;
     private static final String PATHTOFILE = "./src/com/zetcode/maxScore.txt";
+    private final TAdapter myKeyListener = new TAdapter();
 
     private final int[] x = new int[ALL_DOTS];
     private final int[] y = new int[ALL_DOTS];
@@ -108,12 +109,9 @@ public class Board extends JPanel implements ActionListener {
 
     private void initBoard() {
 
-        this.addKeyListener(new TAdapter());
+        this.addKeyListener(this.myKeyListener);
         this.setBackground(Color.black);
         this.setFocusable(true);
-
-        // read highest score
-        this.readHighScore();
 
         this.setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT + POINTS_HEIGHT));
         this.loadImages();
@@ -133,6 +131,9 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void initGame() {
+
+        // read highest score
+        this.readHighScore();
 
         this.dots = 1;
 
@@ -178,6 +179,7 @@ public class Board extends JPanel implements ActionListener {
     private void gameOver(Graphics g) {
 
         String msg = "Game Over";
+        String gameOverMsg = "Press ENTER to play again";
         Font small = new Font("Helvetica", Font.BOLD, 14);
         FontMetrics metr = getFontMetrics(small);
 
@@ -189,10 +191,17 @@ public class Board extends JPanel implements ActionListener {
         // Write the current high score
         this.writeHighScore();
 
+        // Display game over string
         g.setColor(Color.white);
         g.setFont(small);
         g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
+
+        // Draw the high score at the end of the game
+        this.displayPoints(g);
+
         // TODO: Add a way to play again
+        g.drawString("Press ENTER to play again", (B_WIDTH - metr.stringWidth(gameOverMsg)) / 2, B_HEIGHT / 2 + 20);
+        this.addKeyListener(this.myKeyListener);
     }
 
     private void checkApple() {
@@ -297,6 +306,15 @@ public class Board extends JPanel implements ActionListener {
                 downDirection = true;
                 rightDirection = false;
                 leftDirection = false;
+            }
+
+            if (key == KeyEvent.VK_ENTER && (!inGame)) {
+                inGame = true;
+                downDirection = false;
+                rightDirection = true;
+                upDirection = false;
+                leftDirection = false;
+                initGame();
             }
         }
     }
