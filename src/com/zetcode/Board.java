@@ -199,7 +199,7 @@ public class Board extends JPanel implements ActionListener {
         // Draw the high score at the end of the game
         this.displayPoints(g);
 
-        // TODO: Add a way to play again
+        // Play again
         g.drawString("Press ENTER to play again", (B_WIDTH - metr.stringWidth(gameOverMsg)) / 2, B_HEIGHT / 2 + 20);
         this.addKeyListener(this.myKeyListener);
     }
