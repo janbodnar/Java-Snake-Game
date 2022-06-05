@@ -25,16 +25,24 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener {
-    private Logger logger = Logger.getLogger(Board.class.getName());
+    private static enum inGame {
+        IN_GAME, MENU, GAME_OVER
+    }
 
-    private static final int POINTS_HEIGHT = 20;
+    // Font vars
+    private final Font small = new Font("Helvetica", Font.BOLD, 14);
+    private final FontMetrics metr = getFontMetrics(small);
 
+    // Panel and snake vars
     private static final int B_WIDTH = 300;
     private static final int B_HEIGHT = 300;
     private static final int DOT_SIZE = 10;
     private static final int ALL_DOTS = 900;
-    private static final int DELAY = 140;
+
+    // Useful vars + logger
+    private static final Logger logger = Logger.getLogger(Board.class.getName());
     private static final String PATHTOFILE = "./src/com/zetcode/maxScore.txt";
+<<<<<<< master
     private static final String[] MENUOPTIONS = {
             "Press SPACE to start\n",
             "Press C to chooose the snake color\n",
@@ -47,30 +55,51 @@ public class Board extends JPanel implements ActionListener {
 
     private final TAdapter myKeyListener = new TAdapter();
     private final MenuKeyListener menuListener = new MenuKeyListener();
+=======
+    private static final int POINTS_HEIGHT = 20;
+    private final TAdapter myKeyListener = new TAdapter();
+    private final MenuListener ml = new MenuListener();
+>>>>>>> local
 
+    // Cells vars
     private final int[] x = new int[ALL_DOTS];
     private final int[] y = new int[ALL_DOTS];
 
+    // Logic vars
     private int dots;
-    private int apple_x;
-    private int apple_y;
+    private int appleX;
+    private int appleY;
     private int maxScore;
 
+    // Direction vars
     private boolean leftDirection = false;
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
+<<<<<<< master
 
     private enum inGame {
         IN_GAME, NOT_IN_GAME, IN_MENU
     }
 
     private inGame status = inGame.IN_MENU;
+=======
+    private inGame status = inGame.MENU;
+>>>>>>> local
 
+    // Timer vars
     private Timer timer;
+    private static final int DELAY = 140;
+
+    // Image vars
     private Image ball;
     private Image apple;
     private Image head;
+
+    // Menu vars
+    private static final String[] MENUOPTIONS = {
+            "S to Start", "H for Highscore", "Q to Exit"
+    };
 
     public Board() {
         // TODO: make a main menu with some customizable options:
@@ -83,18 +112,27 @@ public class Board extends JPanel implements ActionListener {
         this.initBoard();
     }
 
+    private void drawMenu(Graphics g) {
+        this.setBackground(Color.GRAY);
+        g.setColor(Color.CYAN);
+
+        for (int i = 0; i < MENUOPTIONS.length; i++) {
+            g.drawString(MENUOPTIONS[i], (B_WIDTH - this.metr.stringWidth(MENUOPTIONS[i])) / 2, B_HEIGHT / 2 + i * 15);
+        }
+
+        this.addKeyListener(this.ml);
+    }
+
     private void displayPoints(Graphics g) {
         String points = "Points: " + this.dots;
         String max = "Max: " + this.maxScore;
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        FontMetrics metr = getFontMetrics(small);
 
         g.setColor(Color.red);
         g.fillRect(0, B_HEIGHT, B_WIDTH, POINTS_HEIGHT);
         g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(max, (B_WIDTH - metr.stringWidth(points) - 230), B_HEIGHT + POINTS_HEIGHT);
-        g.drawString(points, (B_WIDTH - metr.stringWidth(points)), B_HEIGHT + POINTS_HEIGHT);
+        g.setFont(this.small);
+        g.drawString(max, (B_WIDTH - this.metr.stringWidth(points) - 230), B_HEIGHT + POINTS_HEIGHT);
+        g.drawString(points, (B_WIDTH - this.metr.stringWidth(points)), B_HEIGHT + POINTS_HEIGHT);
     }
 
     private void writeHighScore() {
@@ -131,8 +169,8 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void initBoard() {
-
         this.addKeyListener(this.myKeyListener);
+
         this.setBackground(Color.black);
         this.setFocusable(true);
 
@@ -200,8 +238,13 @@ public class Board extends JPanel implements ActionListener {
     private void doDrawing(Graphics g) {
 
         if (this.status == inGame.IN_GAME) {
+<<<<<<< master
 
             g.drawImage(apple, apple_x, apple_y, this);
+=======
+            this.setBackground(Color.BLACK);
+            g.drawImage(apple, appleX, appleY, this);
+>>>>>>> local
             this.displayPoints(g);
 
             for (int z = 0; z < dots; z++) {
@@ -213,7 +256,13 @@ public class Board extends JPanel implements ActionListener {
 
             Toolkit.getDefaultToolkit().sync();
 
+<<<<<<< master
         } else if (this.status == inGame.NOT_IN_GAME) {
+=======
+        } else if (this.status == inGame.MENU) {
+            this.drawMenu(g);
+        } else {
+>>>>>>> local
             this.gameOver(g);
         } else {
             this.drawMenu(g);
@@ -223,9 +272,7 @@ public class Board extends JPanel implements ActionListener {
     private void gameOver(Graphics g) {
 
         String msg = "Game Over";
-        String gameOverMsg = "Press ENTER to play again";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        FontMetrics metr = getFontMetrics(small);
+        String gameOverMsg = "Press ENTER to go back to the menu";
 
         this.maxScore = this.dots;
 
@@ -237,20 +284,21 @@ public class Board extends JPanel implements ActionListener {
 
         // Display game over string
         g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
+        g.setFont(this.small);
+        g.drawString(msg, (B_WIDTH - this.metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
 
         // Draw the high score at the end of the game
         this.displayPoints(g);
 
         // Play again
-        g.drawString("Press ENTER to play again", (B_WIDTH - metr.stringWidth(gameOverMsg)) / 2, B_HEIGHT / 2 + 20);
+        g.drawString(gameOverMsg, (B_WIDTH - metr.stringWidth(gameOverMsg)) / 2,
+                B_HEIGHT / 2 + 20);
         this.addKeyListener(this.myKeyListener);
     }
 
     private void checkApple() {
 
-        if ((x[0] == apple_x) && (y[0] == apple_y)) {
+        if ((x[0] == appleX) && (y[0] == appleY)) {
             this.dots++;
             this.locateApple();
         }
@@ -280,6 +328,7 @@ public class Board extends JPanel implements ActionListener {
 
         for (int z = dots; z > 0; z--) {
             if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z]))
+<<<<<<< master
                 this.status = inGame.NOT_IN_GAME;
         }
 
@@ -296,6 +345,24 @@ public class Board extends JPanel implements ActionListener {
             this.status = inGame.NOT_IN_GAME;
 
         if (this.status == inGame.NOT_IN_GAME)
+=======
+                this.status = inGame.GAME_OVER;
+        }
+
+        if (y[0] >= B_HEIGHT)
+            this.status = inGame.GAME_OVER;
+
+        if (y[0] < 0)
+            this.status = inGame.GAME_OVER;
+
+        if (x[0] >= B_WIDTH)
+            this.status = inGame.GAME_OVER;
+
+        if (x[0] < 0)
+            this.status = inGame.GAME_OVER;
+
+        if (this.status == inGame.GAME_OVER)
+>>>>>>> local
             this.timer.stop();
     }
 
@@ -303,15 +370,18 @@ public class Board extends JPanel implements ActionListener {
         Random rand = new Random();
 
         int r = rand.nextInt(30);
-        apple_x = (r * DOT_SIZE);
+        appleX = (r * DOT_SIZE);
 
         r = rand.nextInt(30);
-        apple_y = (r * DOT_SIZE);
+        appleY = (r * DOT_SIZE);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
+<<<<<<< master
 
+=======
+>>>>>>> local
         if (this.status == inGame.IN_GAME) {
             this.checkApple();
             this.checkCollision();
@@ -319,6 +389,31 @@ public class Board extends JPanel implements ActionListener {
         }
 
         this.repaint();
+    }
+
+    private class MenuListener extends KeyAdapter {
+        @Override
+        public void keyPressed(KeyEvent e) {
+
+            int key = e.getKeyCode();
+
+            if (status == inGame.MENU) {
+                switch (key) {
+                    case KeyEvent.VK_Q:
+                        System.exit(0);
+                        break;
+                    case KeyEvent.VK_S:
+                        status = inGame.IN_GAME;
+                        break;
+                    case KeyEvent.VK_H:
+                        // show high score
+                        break;
+                    default:
+                        break;
+
+                }
+            }
+        }
     }
 
     private class TAdapter extends KeyAdapter {
@@ -352,13 +447,18 @@ public class Board extends JPanel implements ActionListener {
                 leftDirection = false;
             }
 
+<<<<<<< master
             if (key == KeyEvent.VK_ENTER && (status == inGame.NOT_IN_GAME)) {
                 status = inGame.IN_GAME;
+=======
+            if (key == KeyEvent.VK_ENTER && (status == inGame.GAME_OVER)) {
+                status = inGame.MENU;
+>>>>>>> local
                 downDirection = false;
                 rightDirection = true;
                 upDirection = false;
                 leftDirection = false;
-                initGame();
+                initBoard();
             }
         }
     }
