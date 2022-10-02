@@ -1,6 +1,8 @@
 package com.zetcode;
 
+import lombok.extern.slf4j.Slf4j;
 import walaniam.snake.Direction;
+import walaniam.snake.GameParams;
 import walaniam.snake.ImageResource;
 
 import javax.swing.*;
@@ -10,8 +12,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
+import static java.util.Optional.ofNullable;
+import static walaniam.snake.GameParams.DEFAULT_SNAKE_SIZE;
+import static walaniam.snake.GameParams.DEFAULT_SPEED;
 import static walaniam.snake.ImageUtils.loadImage;
 
+@Slf4j
 public class Board extends JPanel implements ActionListener {
 
     private static final int B_WIDTH = 300;
@@ -19,11 +25,11 @@ public class Board extends JPanel implements ActionListener {
     private static final int DOT_SIZE = 10;
     private static final int ALL_DOTS = 900;
     private static final int RAND_POS = 29;
-    private static final int DELAY = 140;
 
     private final Image ball = loadImage(ImageResource.DOT);
     private final Image apple = loadImage(ImageResource.APPLE);
     private final Image head = loadImage(ImageResource.HEAD);
+    private final GameParams params;
 
     private final int x[] = new int[ALL_DOTS];
     private final int y[] = new int[ALL_DOTS];
@@ -37,7 +43,8 @@ public class Board extends JPanel implements ActionListener {
 
     private Timer timer;
 
-    public Board() {
+    public Board(GameParams params) {
+        this.params = params;
         initBoard();
     }
 
@@ -53,7 +60,7 @@ public class Board extends JPanel implements ActionListener {
 
     private void initGame() {
 
-        dots = 3;
+        dots = ofNullable(params.getSnakeSize()).orElse(DEFAULT_SNAKE_SIZE);
 
         for (int i = 0; i < dots; i++) {
             x[i] = 50 - i * 10;
@@ -62,7 +69,7 @@ public class Board extends JPanel implements ActionListener {
 
         locateApple();
 
-        timer = new Timer(DELAY, this);
+        timer = new Timer(ofNullable(params.getSpeed()).orElse(DEFAULT_SPEED), this);
         timer.start();
     }
 
@@ -104,9 +111,7 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void checkApple() {
-
         if ((x[0] == apple_x) && (y[0] == apple_y)) {
-
             dots++;
             locateApple();
         }
@@ -128,47 +133,34 @@ public class Board extends JPanel implements ActionListener {
     }
 
     private void checkCollision() {
-
-        for (int z = dots; z > 0; z--) {
-
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
-                inGame = false;
+        boolean selfCollision = false;
+        for (int i = dots; i > 0; i--) {
+            if ((i > 4) && (x[0] == x[i]) && (y[0] == y[i])) {
+                selfCollision = true;
+                break;
             }
         }
+        boolean borderCollision = y[0] >= B_HEIGHT || y[0] < 0 || x[0] >= B_WIDTH || x[0] < 0;
 
-        if (y[0] >= B_HEIGHT) {
-            inGame = false;
-        }
-
-        if (y[0] < 0) {
-            inGame = false;
-        }
-
-        if (x[0] >= B_WIDTH) {
-            inGame = false;
-        }
-
-        if (x[0] < 0) {
-            inGame = false;
-        }
+        inGame = !selfCollision && !borderCollision;
 
         if (!inGame) {
+            log.info("Collision self={}, wall={}", selfCollision, borderCollision);
             timer.stop();
         }
     }
 
     private void locateApple() {
         int r = (int) (Math.random() * RAND_POS);
-        apple_x = ((r * DOT_SIZE));
+        apple_x = r * DOT_SIZE;
         r = (int) (Math.random() * RAND_POS);
-        apple_y = ((r * DOT_SIZE));
+        apple_y = r * DOT_SIZE;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
 
         if (inGame) {
-
             checkApple();
             checkCollision();
             move();

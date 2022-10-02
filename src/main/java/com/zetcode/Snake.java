@@ -1,6 +1,7 @@
 package com.zetcode;
 
 import lombok.extern.slf4j.Slf4j;
+import walaniam.snake.GameParams;
 
 import javax.swing.*;
 import java.awt.*;
@@ -10,13 +11,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class Snake extends JFrame {
 
-    public Snake() {
-        initUI();
+    public Snake(GameParams params) {
+        initUI(params);
     }
 
-    private void initUI() {
+    private void initUI(GameParams params) {
 
-        add(new Board());
+        add(new Board(params));
 
         setResizable(false);
         pack();
@@ -28,8 +29,15 @@ public class Snake extends JFrame {
 
     public static void main(String[] args) {
         log.info("Starting Snake with params: {}", Arrays.stream(args).collect(Collectors.joining(", ")));
+        var paramsBuilder = GameParams.builder();
+        if (args.length > 0) {
+            paramsBuilder.speed(Integer.parseInt(args[0]));
+        }
+        if (args.length > 1) {
+            paramsBuilder.snakeSize(Integer.parseInt(args[1]));
+        }
         EventQueue.invokeLater(() -> {
-            JFrame frame = new Snake();
+            JFrame frame = new Snake(paramsBuilder.build());
             frame.setVisible(true);
         });
     }
