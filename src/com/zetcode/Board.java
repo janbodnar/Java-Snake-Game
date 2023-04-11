@@ -1,12 +1,6 @@
 package com.zetcode;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -17,68 +11,62 @@ import javax.swing.Timer;
 
 public class Board extends JPanel implements ActionListener {
 
-    private final int B_WIDTH = 300;
-    private final int B_HEIGHT = 300;
-    private final int DOT_SIZE = 10;
-    private final int ALL_DOTS = 900;
-    private final int RAND_POS = 29;
-    private final int DELAY = 140;
+    private final int BOARD_WIDTH = 300;
+    private final int BOARD_HEIGHT = 300;
+    private final int DOT_SIZE = 10; //A 'dot' is a single segmentation of the snake's body.
+    private final int MAX_LENGTH = 900;
+    private final int RAND_POS = 29; //The value assigned here is the multiplier for the random value generated later.
+    private final int DELAY = 140; //The delay between 'ticks' of the game (refreshes of the game board)
 
-    private final int x[] = new int[ALL_DOTS];
-    private final int y[] = new int[ALL_DOTS];
+    private final int[] dotXPos = new int[MAX_LENGTH]; //Holds the x position of each dot on the snake.
+    private final int[] dotYPos = new int[MAX_LENGTH]; //Holds the y position of each dot on the snake.
 
-    private int dots;
-    private int apple_x;
-    private int apple_y;
+    //Property variables
+    private int currentSnakeLength;
+    private int appleXPos, appleYPos;
 
+    //Movement variables
     private boolean leftDirection = false;
     private boolean rightDirection = true;
     private boolean upDirection = false;
     private boolean downDirection = false;
-    private boolean inGame = true;
-
+    //Game-management variables
+    private boolean gameRunning = true;
     private Timer timer;
-    private Image ball;
-    private Image apple;
-    private Image head;
+    private Image body, head, apple;
 
     public Board() {
-        
         initBoard();
     }
-    
+
     private void initBoard() {
 
-        addKeyListener(new TAdapter());
+        addKeyListener(new InputHandler());
         setBackground(Color.black);
         setFocusable(true);
 
-        setPreferredSize(new Dimension(B_WIDTH, B_HEIGHT));
+        setPreferredSize(new Dimension(BOARD_WIDTH, BOARD_HEIGHT));
         loadImages();
         initGame();
     }
 
     private void loadImages() {
+        body = new ImageIcon("src/resources/dot.png").getImage();
 
-        ImageIcon iid = new ImageIcon("src/resources/dot.png");
-        ball = iid.getImage();
+        apple = new ImageIcon("src/resources/apple.png").getImage();
 
-        ImageIcon iia = new ImageIcon("src/resources/apple.png");
-        apple = iia.getImage();
-
-        ImageIcon iih = new ImageIcon("src/resources/head.png");
-        head = iih.getImage();
+        head = new ImageIcon("src/resources/head.png").getImage();
     }
 
     private void initGame() {
 
-        dots = 3;
+        currentSnakeLength = 3;
 
-        for (int z = 0; z < dots; z++) {
-            x[z] = 50 - z * 10;
-            y[z] = 50;
+        for (int z = 0; z < currentSnakeLength; z++) {
+            dotXPos[z] = 50 - z * 10;
+            dotYPos[z] = 50;
         }
-        
+
         locateApple();
 
         timer = new Timer(DELAY, this);
@@ -91,18 +79,18 @@ public class Board extends JPanel implements ActionListener {
 
         doDrawing(g);
     }
-    
+
     private void doDrawing(Graphics g) {
-        
-        if (inGame) {
 
-            g.drawImage(apple, apple_x, apple_y, this);
+        if (gameRunning) {
 
-            for (int z = 0; z < dots; z++) {
+            g.drawImage(apple, appleXPos, appleYPos, this);
+
+            for (int z = 0; z < currentSnakeLength; z++) {
                 if (z == 0) {
-                    g.drawImage(head, x[z], y[z], this);
+                    g.drawImage(head, dotXPos[z], dotYPos[z], this);
                 } else {
-                    g.drawImage(ball, x[z], y[z], this);
+                    g.drawImage(body, dotXPos[z], dotYPos[z], this);
                 }
             }
 
@@ -111,97 +99,115 @@ public class Board extends JPanel implements ActionListener {
         } else {
 
             gameOver(g);
-        }        
+        }
     }
 
     private void gameOver(Graphics g) {
-        
-        String msg = "Game Over";
-        Font small = new Font("Helvetica", Font.BOLD, 14);
-        FontMetrics metr = getFontMetrics(small);
+
+        String gameOverMessage = "Game Over";
+        String restartMessage = "Press 'R' to Restart";
+
+        Font endGameFont = new Font("Helvetica", Font.BOLD, 28);
+
+        FontMetrics fontMetric = getFontMetrics(endGameFont);
+
+        int gameOverTextXPos = (BOARD_WIDTH - fontMetric.stringWidth(gameOverMessage)) / 2;
+        int gameOverTextYPos = (BOARD_HEIGHT / 2) - 30;
 
         g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(msg, (B_WIDTH - metr.stringWidth(msg)) / 2, B_HEIGHT / 2);
+        g.setFont(endGameFont);
+        g.drawString(gameOverMessage, gameOverTextXPos, gameOverTextYPos);
+        g.drawString(restartMessage, gameOverTextXPos - 50, gameOverTextYPos + 60);
     }
 
     private void checkApple() {
 
-        if ((x[0] == apple_x) && (y[0] == apple_y)) {
+        //If the snake's head is at the same x and y pos of the apple, add to the length, and move the apple.
+        if ((dotXPos[0] == appleXPos) && (dotYPos[0] == appleYPos)) {
 
-            dots++;
+            currentSnakeLength++;
             locateApple();
         }
     }
 
     private void move() {
 
-        for (int z = dots; z > 0; z--) {
-            x[z] = x[(z - 1)];
-            y[z] = y[(z - 1)];
+        //Moves every piece of the snake's body to the x and y pos of the body-part in-front of it, creating the effect
+        //of the snake moving forward. This must be done *before* the snake's head is moved.
+        for (int z = currentSnakeLength; z > 0; z--) {
+            dotXPos[z] = dotXPos[(z - 1)];
+            dotYPos[z] = dotYPos[(z - 1)];
         }
 
+        //Moves the head according to the enabled direction.
         if (leftDirection) {
-            x[0] -= DOT_SIZE;
+            dotXPos[0] -= DOT_SIZE;
         }
 
         if (rightDirection) {
-            x[0] += DOT_SIZE;
+            dotXPos[0] += DOT_SIZE;
         }
 
         if (upDirection) {
-            y[0] -= DOT_SIZE;
+            dotYPos[0] -= DOT_SIZE;
         }
 
         if (downDirection) {
-            y[0] += DOT_SIZE;
+            dotYPos[0] += DOT_SIZE;
         }
     }
 
     private void checkCollision() {
 
-        for (int z = dots; z > 0; z--) {
-
-            if ((z > 4) && (x[0] == x[z]) && (y[0] == y[z])) {
-                inGame = false;
+        /*
+        Loops through every part of the snake's body and for each piece checks to see if that piece is touching the
+        head. If it is, ends the game. Removed a check that was initially here which ignored collisions with early parts
+        of the body. With that check in place, it was super easy to pass straight through the body anytime you got trapped.
+        */
+        for (int z = currentSnakeLength; z > 0; z--) {
+            if ((dotXPos[0] == dotXPos[z]) && (dotYPos[0] == dotYPos[z])) {
+                gameRunning = false;
             }
         }
 
-        if (y[0] >= B_HEIGHT) {
-            inGame = false;
+        //All of these checks are to ensure the snake is within the bounds of the game board.
+        if (dotYPos[0] >= BOARD_HEIGHT) {
+            gameRunning = false;
         }
 
-        if (y[0] < 0) {
-            inGame = false;
+        if (dotYPos[0] < 0) {
+            gameRunning = false;
         }
 
-        if (x[0] >= B_WIDTH) {
-            inGame = false;
+        if (dotXPos[0] >= BOARD_WIDTH) {
+            gameRunning = false;
         }
 
-        if (x[0] < 0) {
-            inGame = false;
+        if (dotXPos[0] < 0) {
+            gameRunning = false;
         }
-        
-        if (!inGame) {
+
+        if (!gameRunning) {
             timer.stop();
         }
     }
 
+    //Randomizes the x and y position of the apple.
     private void locateApple() {
 
         int r = (int) (Math.random() * RAND_POS);
-        apple_x = ((r * DOT_SIZE));
+        appleXPos = ((r * DOT_SIZE));
 
         r = (int) (Math.random() * RAND_POS);
-        apple_y = ((r * DOT_SIZE));
+        appleYPos = ((r * DOT_SIZE));
     }
 
+    //This is run every 'tick' of the game-loop. First everything is updated and refreshed, put in it's proper place,
+    //and then the screen is updated to reflect these changes.
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (inGame) {
-
+        if (gameRunning) {
             checkApple();
             checkCollision();
             move();
@@ -210,36 +216,44 @@ public class Board extends JPanel implements ActionListener {
         repaint();
     }
 
-    private class TAdapter extends KeyAdapter {
+    //Class responsible for the handling of user-input and movement of the snake
+    private class InputHandler extends KeyAdapter {
 
         @Override
         public void keyPressed(KeyEvent e) {
 
             int key = e.getKeyCode();
 
-            if ((key == KeyEvent.VK_LEFT) && (!rightDirection)) {
+            //Added support for the 'w' 'a' 's' 'd' keys here
+            if ( ( (key == KeyEvent.VK_LEFT) || (key == KeyEvent.VK_A) ) && (!rightDirection)) {
                 leftDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
 
-            if ((key == KeyEvent.VK_RIGHT) && (!leftDirection)) {
+            if ( ( (key == KeyEvent.VK_RIGHT) || (key == KeyEvent.VK_D) ) && (!leftDirection)) {
                 rightDirection = true;
                 upDirection = false;
                 downDirection = false;
             }
 
-            if ((key == KeyEvent.VK_UP) && (!downDirection)) {
+            if ( ( (key == KeyEvent.VK_UP) || (key == KeyEvent.VK_W) ) && (!downDirection)) {
                 upDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
 
-            if ((key == KeyEvent.VK_DOWN) && (!upDirection)) {
+            if ( ( (key == KeyEvent.VK_DOWN) || (key == KeyEvent.VK_S) ) && (!upDirection)) {
                 downDirection = true;
                 rightDirection = false;
                 leftDirection = false;
             }
+
+            if(key == KeyEvent.VK_R && !gameRunning){
+                Snake.restartGame();
+            }
+
         }
+
     }
 }
